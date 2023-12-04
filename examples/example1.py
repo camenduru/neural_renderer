@@ -12,7 +12,7 @@ import scipy.misc
 import tqdm
 
 import neural_renderer
-
+import imageio
 
 def run():
     parser = argparse.ArgumentParser()
@@ -51,7 +51,11 @@ def run():
         renderer.eye = neural_renderer.get_points_from_angles(camera_distance, elevation, azimuth)
         images = renderer.render(vertices, faces, textures)  # [batch_size, RGB, image_size, image_size]
         image = images.data.get()[0].transpose((1, 2, 0))  # [image_size, image_size, RGB]
-        scipy.misc.toimage(image, cmin=0, cmax=1).save('%s/_tmp_%04d.png' % (working_directory, num))
+        normalized_image = ((image - cmin) / (cmax - cmin) * 255).astype(np.uint8)
+        # scipy.misc.toimage(image, cmin=0, cmax=1).save('%s/_tmp_%04d.png' % (working_directory, num))
+        normalized_image = (image * 255).astype(np.uint8)
+        filename = f'{working_directory}/_tmp_{num:04d}.png'
+        imageio.imwrite(filename, normalized_image)
 
     # generate gif (need ImageMagick)
     options = '-delay 8 -loop 0 -layers optimize'
